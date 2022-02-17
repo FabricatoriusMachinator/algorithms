@@ -2,7 +2,7 @@ package org.pg4200.ex01;
 
 import org.pg4200.les02.queue.MyQueue;
 
-public class MyRingArrayQueue implements MyQueue {
+public class MyRingArrayQueue<T> implements MyQueue<T> {
 
     Object[] data;
 
@@ -20,14 +20,13 @@ public class MyRingArrayQueue implements MyQueue {
     private int tail= -1;
 
     @Override
-    public void enqueue(Object value) {
+    public void enqueue(T value) {
 
 
 
-        if(head > 0) {
+        if(isEmpty()) {
             head = 0;
             tail = 0;
-            data[head] = value;
         }
         else if (head <= tail) {
             if(tail < data.length-1){
@@ -39,31 +38,50 @@ public class MyRingArrayQueue implements MyQueue {
                     tail = 0;
                 }
                 else {
-                    Object[] tmp = new Object[data.length*2];
+                    Object[] tmp = new Object[(data.length*2)];
 
-                    int k = data.length - head;
-
-                    for(int i = 0; i < k; i++){
-                        tmp[i] = data[head+i];
+                    for(int i = 0; i < data.length; i++){
+                        tmp[i] = data[i];
                     }
 
-                    for(int i = 0; i < tail+1; i++){
-                        tmp[k+i] = data[i];
-                    }
-
-                    head = 0;
-                    tail = data.length;
                     data = tmp;
+                    tail++;
                 }
             }
+        }
+        else {
+            assert tail == head;
 
+            if (head -1 > tail) {
+                tail++;
+            }
+            else {
+                /*
+                    array is totally full. but making copy is not trivial,
+                    as we need to make sure to re-align such that head=0 && head < tail
+                 */
+                Object[] tmp = new Object[(data.length * 2)];
+
+                int k = data.length - head;
+                for(int i=0; i<k; i++){
+                    tmp[i] = data[head + i];
+                }
+
+                for(int i=0; i< (tail+1); i++){
+                    tmp[k + i] = data[i];
+                }
+
+                head = 0;
+                tail = data.length;
+                data = tmp;
+            }
         }
         data[tail] = value;
     }
 
     @Override
-    public Object dequeue() {
-        Object value = data[head];
+    public T dequeue() {
+        T value = (T)data[head];
 
         if(size() == 1) {
             head = -1;
@@ -77,15 +95,15 @@ public class MyRingArrayQueue implements MyQueue {
             }
 
         }
-        return value;
+        return (T) value;
     }
 
     @Override
-    public Object peek() {
+    public T peek() {
         if(isEmpty()){
             throw  new RuntimeException();
         }
-        return data[head];
+        return (T) data[head];
     }
 
     @Override
